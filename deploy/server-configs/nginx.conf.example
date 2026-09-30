@@ -1,0 +1,16 @@
+# Nginx — MAHER static site (copy into your server block; not used by Nginx from this folder)
+server {
+    listen 80;
+    server_name example.com www.example.com;   # ← your domain
+    root /var/www/maher;                        # ← folder where the package was extracted
+    index index.html;
+
+    location = / { return 302 /ar/; }
+    location / { try_files $uri $uri/ $uri/index.html =404; }
+    error_page 404 /404.html;
+
+    location ~* \.(js|css|woff2|webp|png|jpg|svg|ico)$ {
+        expires 30d;
+        add_header Cache-Control "public";
+    }
+}

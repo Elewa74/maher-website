@@ -7,7 +7,7 @@ import { join } from 'node:path';
 
 const base = (process.env.NEXT_PUBLIC_BASE_PATH || '').replace(/\/$/, '');
 const origin = process.env.BASE_URL || 'http://127.0.0.1:8788';
-const out = 'out';
+const out = process.env.OUT_DIR || 'out';
 const locales = ['ar', 'en'];
 const slugs = ['platform', 'uae-curriculum', 'teachers', 'leaders', 'insights', 'faq'];
 const routes = locales.flatMap((l) => [`/${l}`, ...slugs.map((s) => `/${l}/${s}`)]);
@@ -22,7 +22,7 @@ const fixCssPublic = (text) => (base ? text.replaceAll(`${base}/_next/static/fon
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 cpSync('dist/client', out, { recursive: true });
-rmSync(join(out, '_headers'), { force: true });
+for (const junk of ['_headers', '.assetsignore', '.vite', 'vinext-client-entry-manifest.json', 'favicon.svg']) rmSync(join(out, junk), { recursive: true, force: true });
 // With a basePath the bundler nests hashed assets under dist/client/<base>/; Pages serves out/ at <base>/.
 if (base) {
   cpSync(join('dist/client', base), out, { recursive: true });
@@ -49,6 +49,12 @@ for (const route of routes) {
 writeFileSync(join(out, 'index.html'), `<!doctype html><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=${base}/ar/"><link rel="canonical" href="${base}/ar/"><title>MAHER</title>`);
 writeFileSync(join(out, '404.html'), prefixHtml((await grab('/__missing__')).html));
 writeFileSync(join(out, '.nojekyll'), '');
+for (const file of ['robots.txt', 'sitemap.xml']) {
+  const res = await fetch(`${origin}${base}/${file}`);
+  if (res.ok) writeFileSync(join(out, file), await res.text());
+}
+// Root deployments (a real domain) get ready-made configs for the common web servers.
+if (!base) cpSync('deploy/server-configs', out, { recursive: true });
 
 // Fix root-relative URLs inside built CSS/JS (fonts, dunes art, media).
 function walk(dir) {

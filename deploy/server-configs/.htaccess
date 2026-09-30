@@ -1,0 +1,18 @@
+# Apache — MAHER static site
+Options -Indexes
+DirectoryIndex index.html
+ErrorDocument 404 /404.html
+
+RewriteEngine On
+# Home goes to the Arabic site
+RewriteRule ^$ /ar/ [R=302,L]
+
+# Long cache for hashed build assets, short for pages
+<IfModule mod_headers.c>
+  <FilesMatch "\.(js|css|woff2|webp|png|jpg|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache"
+  </FilesMatch>
+</IfModule>

@@ -59,6 +59,63 @@ jobs:
         with:
           path: out
 
+  # Root-domain package for the hosting team: plain static files + server configs, zipped
+  # and attached to the "site-latest" release so the download link never changes.
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build for the production domain
+        run: pnpm build
+        env:
+          NEXT_PUBLIC_SITE_URL: ${{ vars.SITE_URL || 'https://maherlearn.com' }}
+
+      - name: Start production server
+        run: |
+          npx wrangler dev --config dist/server/wrangler.json --port 8788 --ip 127.0.0.1 > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8788/ar > /dev/null && exit 0
+            sleep 2
+          done
+          cat wrangler.log
+          exit 1
+
+      - name: Export and zip
+        run: |
+          OUT_DIR=package/site BASE_URL=http://127.0.0.1:8788 node scripts/export-static.mjs
+          rm -f package/site/.nojekyll
+          cp deploy/DEPLOY.md package/DEPLOY.md
+          cd package && zip -qr ../maher-website-deploy.zip .
+
+      - name: Publish to the site-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="Ready-to-upload MAHER website (static files + Apache/IIS/Nginx configs). Built from ${GITHUB_SHA::7}. See DEPLOY.md inside the zip."
+          if gh release view site-latest > /dev/null 2>&1; then
+            gh release edit site-latest --notes "$NOTES"
+          else
+            gh release create site-latest --title "MAHER website — deployment package" --notes "$NOTES" --latest
+          fi
+          git tag -f site-latest && git push -f origin site-latest
+          gh release upload site-latest maher-website-deploy.zip --clobber
+
   deploy:
     needs: build
     runs-on: ubuntu-latest

@@ -2,7 +2,8 @@ import { siteContent } from '../content';
 import { ogImage } from './media';
 import { pageSlugs, publicPaths, type Locale, type PageSlug } from './i18n';
 
-export const siteOrigin = 'https://maher-learning.almotahida-e-4340.chatgpt.site';
+// Production domain for canonical URLs, Open Graph and the sitemap. Set NEXT_PUBLIC_SITE_URL at build time.
+export const siteOrigin = (process.env.NEXT_PUBLIC_SITE_URL || 'https://maher-learning.almotahida-e-4340.chatgpt.site').replace(/\/$/, '');
 
 export function buildPageMetadata(locale: Locale, page: 'home' | PageSlug) {
   const slug = page === 'home' ? '' : `/${page}`;
