@@ -1,0 +1,6 @@
+allowBuilds:
+  esbuild: true
+  sharp: true
+  workerd: true
+overrides:
+  framer-motion>motion-dom: 12.23.12

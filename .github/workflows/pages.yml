@@ -1,0 +1,70 @@
+name: Preview on GitHub Pages
+
+# Builds the site with the repository name as its base path, snapshots every
+# route to static HTML (scripts/export-static.mjs) and publishes it to Pages.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test
+
+      - run: pnpm build
+
+      - name: Start production server
+        run: |
+          npx wrangler dev --config dist/server/wrangler.json --port 8788 --ip 127.0.0.1 > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf "http://127.0.0.1:8788${NEXT_PUBLIC_BASE_PATH}/ar" > /dev/null && exit 0
+            sleep 2
+          done
+          cat wrangler.log
+          exit 1
+
+      - name: Export static snapshot
+        run: node scripts/export-static.mjs
+        env:
+          BASE_URL: http://127.0.0.1:8788
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
