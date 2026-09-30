@@ -4,10 +4,11 @@ import { buildPageMetadata, sitemapEntries } from '../lib/seo';
 describe('localized SEO outputs', () => {
   it('creates equivalent canonical and alternate URLs', () => {
     const metadata = buildPageMetadata('ar', 'teachers');
-    expect(metadata.alternates?.canonical).toBe('/ar/teachers');
+    expect(metadata.alternates?.canonical).toBe('/teachers');
     expect(metadata.alternates?.languages).toEqual({
+      ar: '/teachers',
       en: '/en/teachers',
-      ar: '/ar/teachers',
+      'x-default': '/teachers',
     });
   });
 
@@ -15,10 +16,10 @@ describe('localized SEO outputs', () => {
     const entries = sitemapEntries();
     expect(entries).toHaveLength(14);
     expect(entries.map((entry) => entry.url)).toContain(
-      'https://maher-learning.almotahida-e-4340.chatgpt.site/ar/uae-curriculum',
+      'https://maherlearn.com/uae-curriculum',
     );
     expect(entries.map((entry) => entry.url)).not.toContain(
-      'https://maher-learning.almotahida-e-4340.chatgpt.site/ar/bilingual',
+      'https://maherlearn.com/bilingual',
     );
   });
 });

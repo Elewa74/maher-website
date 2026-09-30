@@ -5,7 +5,7 @@ import { SitePhoto } from '../common/site-photo';
 import { media, tabletHands, type MediaItem } from '../../lib/media';
 import { PageHero } from '../layout/page-hero';
 import { getContent } from '../../content';
-import { localizedPath } from '../../lib/i18n';
+import { localeHref } from '../../lib/i18n';
 import { ClosingCta } from './closing-cta';
 import { Section } from '../layout/section';
 import { Reveal } from '../motion/reveal';
@@ -89,7 +89,7 @@ export function InternalStoriesPage({ locale, slug, page }: { locale: Locale; sl
           </div>
         </Section>
       ))}
-      <ClosingCta copy={getContent(locale).home.finalCta} currentPath={localizedPath(locale, `/${slug}`)} />
+      <ClosingCta copy={getContent(locale).home.finalCta} currentPath={localeHref(locale, slug)} />
     </main>
   );
 }

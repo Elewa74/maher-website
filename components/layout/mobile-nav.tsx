@@ -3,7 +3,7 @@
 import { Globe, Menu } from 'lucide-react';
 import type { SiteContent } from '../../content';
 import type { Locale } from '../../lib/i18n';
-import { localizedPath } from '../../lib/i18n';
+import { localeHref, localizedPath } from '../../lib/i18n';
 import {
   Sheet,
   SheetClose,
@@ -26,12 +26,12 @@ export function MobileNav({ locale, copy, pathname }: { locale: Locale; copy: Si
       </SheetTrigger>
       <SheetContent side={locale === 'ar' ? 'left' : 'right'} className="mobile-menu-panel" showCloseButton>
         <SheetHeader>
-          <SheetTitle><Brand href={`/${locale}`} /></SheetTitle>
+          <SheetTitle><Brand href={localeHref(locale)} /></SheetTitle>
           <SheetDescription>{copy.brand.statement}</SheetDescription>
         </SheetHeader>
         <nav className="mobile-menu-links" aria-label={copy.common.menu}>
           {copy.nav.map((item) => {
-            const href = `/${locale}${item.slug ? `/${item.slug}` : ''}`;
+            const href = localeHref(locale, item.slug);
             return (
               <SheetClose
                 key={item.slug}

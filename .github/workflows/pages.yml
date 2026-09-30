@@ -44,7 +44,7 @@ jobs:
         run: |
           npx wrangler dev --config dist/server/wrangler.json --port 8788 --ip 127.0.0.1 > wrangler.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -sf "http://127.0.0.1:8788${NEXT_PUBLIC_BASE_PATH}/ar" > /dev/null && exit 0
+            curl -sf "http://127.0.0.1:8788${NEXT_PUBLIC_BASE_PATH}/" > /dev/null && exit 0
             sleep 2
           done
           cat wrangler.log
@@ -90,7 +90,7 @@ jobs:
         run: |
           npx wrangler dev --config dist/server/wrangler.json --port 8788 --ip 127.0.0.1 > wrangler.log 2>&1 &
           for i in $(seq 1 60); do
-            curl -sf http://127.0.0.1:8788/ar > /dev/null && exit 0
+            curl -sf http://127.0.0.1:8788/ > /dev/null && exit 0
             sleep 2
           done
           cat wrangler.log
@@ -99,8 +99,9 @@ jobs:
       - name: Export and zip
         run: |
           OUT_DIR=package/site BASE_URL=http://127.0.0.1:8788 node scripts/export-static.mjs
-          rm -f package/site/.nojekyll
           cp deploy/DEPLOY.md package/DEPLOY.md
+          mkdir -p package/server-configs
+          cp deploy/server-configs/nginx.conf.example deploy/aws/cloudfront-function.js package/server-configs/
           cd package && zip -qr ../maher-website-deploy.zip .
 
       - name: Publish to the site-latest release

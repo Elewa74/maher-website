@@ -8,7 +8,7 @@ export default function NotFound() {
       <span>404</span>
       <h1>There is no learning path here.</h1>
       <p>هذه الصفحة غير موجودة. يمكنك العودة إلى موقع ماهر.</p>
-      <div><a href={withBase('/en')}>English home</a><a href={withBase('/ar')}>الرئيسية العربية</a></div>
+      <div><a href={withBase('/en')}>English home</a><a href={withBase('/')}>الرئيسية العربية</a></div>
     </main>
   );
 }

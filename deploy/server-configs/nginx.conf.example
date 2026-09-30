@@ -1,16 +1,39 @@
-# Nginx — MAHER static site (copy into your server block; not used by Nginx from this folder)
+# Nginx — MAHER website (static files). Copy into your server configuration.
+# Arabic is served from the root (/, /platform, …); English from /en/.
+
 server {
     listen 80;
-    server_name example.com www.example.com;   # ← your domain
-    root /var/www/maher;                        # ← folder where the package was extracted
+    listen [::]:80;
+    server_name maherlearn.com www.maherlearn.com;
+    return 301 https://maherlearn.com$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name maherlearn.com;
+
+    # ssl_certificate     /etc/letsencrypt/live/maherlearn.com/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/maherlearn.com/privkey.pem;
+
+    root /var/www/maherlearn;   # ← folder where the contents of site/ were uploaded
     index index.html;
 
-    location = / { return 302 /ar/; }
-    location / { try_files $uri $uri/ $uri/index.html =404; }
+    # Old /ar/... addresses → the same page at the root
+    location = /ar { return 301 /; }
+    location ^~ /ar/ { rewrite ^/ar/(.*?)/?$ /$1 permanent; }
+
+    # Clean URLs without a trailing slash
+    location / {
+        try_files $uri $uri/index.html =404;
+    }
     error_page 404 /404.html;
 
-    location ~* \.(js|css|woff2|webp|png|jpg|svg|ico)$ {
-        expires 30d;
-        add_header Cache-Control "public";
-    }
+    location ~* \.(js|css|woff2)$ { expires 1y; add_header Cache-Control "public, immutable"; }
+    location ~* \.(webp|png|jpg|svg|ico)$ { expires 30d; }
+
+    add_header X-Content-Type-Options nosniff always;
+    add_header Referrer-Policy strict-origin-when-cross-origin always;
+    gzip on;
+    gzip_types text/css application/javascript image/svg+xml application/xml text/plain;
 }

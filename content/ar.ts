@@ -1,6 +1,6 @@
 import type { SiteContent } from './types';
 
-const path = (slug = '') => `/ar${slug ? `/${slug}` : ''}`;
+const path = (slug = '') => (slug ? `/${slug}` : '/');
 
 export const ar: SiteContent = {
   brand: {

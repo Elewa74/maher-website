@@ -4,7 +4,7 @@ import { ArrowRight, Globe } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { SiteContent } from '../../content';
-import { localizedPath, type Locale } from '../../lib/i18n';
+import { localeHref, localizedPath, type Locale } from '../../lib/i18n';
 import { Brand } from '../common/brand';
 import { MobileNav } from './mobile-nav';
 import { routePath, withBase } from '../../lib/base-path';
@@ -25,10 +25,10 @@ export function SiteHeader({ locale, copy }: { locale: Locale; copy: SiteContent
   return (
     <header className={`site-header ${compact ? 'is-compact' : ''}`}>
       <div className="site-header__inner">
-        <Brand href={`/${locale}`} />
+        <Brand href={localeHref(locale)} />
         <nav className="desktop-nav" aria-label={locale === 'ar' ? 'التنقل الرئيسي' : 'Primary navigation'}>
           {copy.nav.map((item) => {
-            const href = `/${locale}${item.slug ? `/${item.slug}` : ''}`;
+            const href = localeHref(locale, item.slug);
             const current = pathname === href;
             return <a href={withBase(href)} aria-current={current ? 'page' : undefined} key={item.slug}>{item.label}</a>;
           })}
