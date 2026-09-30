@@ -2,6 +2,13 @@
 
 This package contains the complete source code for the MAHER product-story website in Arabic and English. Both languages are part of one application, and the language switcher preserves the equivalent current page.
 
+## Live preview
+
+- Arabic: https://elewa74.github.io/maher-website/ar/
+- English: https://elewa74.github.io/maher-website/en/
+
+Every push to `main` rebuilds the preview through `.github/workflows/pages.yml`: it runs the tests, builds with `NEXT_PUBLIC_BASE_PATH=/maher-website`, snapshots every route with `scripts/export-static.mjs`, and publishes to GitHub Pages.
+
 ## Requirements
 
 - Node.js `>=22.13.0`
