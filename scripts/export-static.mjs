@@ -63,11 +63,27 @@ for (const route of routes) {
 }
 
 // 3. 404 page, robots.txt and sitemap.xml.
-const missing = await grab('/__missing__', { expectOk: false });
+// Any unknown /ar/... address renders the Arabic 404 inside the site layout (app/[locale]/[...missing]).
+const missing = await grab('/ar/__404', { expectOk: false });
 writeFileSync(join(out, '404.html'), prefixHtml(missing.body));
 for (const file of ['robots.txt', 'sitemap.xml']) {
   const { body } = await grab(`/${file}`);
   writeFileSync(join(out, file), body);
+}
+
+// Old /ar/... addresses: tiny redirect pages, so they also work on hosts without redirect rules
+// (GitHub Pages, plain S3). Apache/IIS/Nginx/CloudFront configs redirect with a real 301 first.
+for (const route of ['/', ...slugs.map((s) => `/${s}`)]) {
+  const target = `${base}${route}`;
+  const dir = join(out, 'ar', route);
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    join(dir, 'index.html'),
+    `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>ماهر</title>` +
+      `<meta name="robots" content="noindex"><link rel="canonical" href="${target}">` +
+      `<meta http-equiv="refresh" content="0; url=${target}"><script>location.replace(${JSON.stringify(target)} + location.hash)</script>` +
+      `</head><body><a href="${target}">ماهر</a></body></html>`,
+  );
 }
 
 // 4. Fix root-relative URLs inside built CSS/JS (fonts, dunes art, media).
